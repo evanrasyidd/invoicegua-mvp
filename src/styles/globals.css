@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0F0F0F;
+  --color-surface: #FFFFFF;
+  --color-bg: #F9FAFB;
+  --color-border: #E5E7EB;
+  --color-border-light: #F3F4F6;
+
+  --color-text-primary: #0F0F0F;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+
+  --color-sidebar-bg: #0F0F0F;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+}
+
+:root {
+  --color-primary: #0F0F0F;
+  --color-surface: #FFFFFF;
+  --color-bg: #F9FAFB;
+  --color-border: #E5E7EB;
+  --color-border-light: #F3F4F6;
+  --color-text-primary: #0F0F0F;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-sidebar-bg: #0F0F0F;
+  --color-sidebar-text: rgba(255, 255, 255, 0.45);
+  --color-sidebar-text-active: #FFFFFF;
+  --color-sidebar-item-active: rgba(255, 255, 255, 0.10);
+  --color-whatsapp: #25D366;
+
+  --status-draft-bg: #F9FAFB;
+  --status-draft-text: #6B7280;
+  --status-sent-bg: #EFF6FF;
+  --status-sent-text: #1D4ED8;
+  --status-overdue-bg: #FEF2F2;
+  --status-overdue-text: #B91C1C;
+  --status-paid-bg: #F0FDF4;
+  --status-paid-text: #15803D;
+}
+
+.dark {
+  --color-primary: #FFFFFF;
+  --color-surface: #111111;
+  --color-bg: #0A0A0A;
+  --color-border: #1F1F1F;
+  --color-border-light: #1A1A1A;
+  --color-text-primary: #F9FAFB;
+  --color-text-secondary: #9CA3AF;
+  --color-text-muted: #6B7280;
+  --color-sidebar-bg: #080808;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+/* Tabular numbers everywhere amounts appear */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.3px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Invoice number monospace */
+.font-mono {
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+}
