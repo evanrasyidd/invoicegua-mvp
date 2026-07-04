@@ -1,3 +1,5 @@
+// ─── Browser (pakai Intl API) ─────────────────────────────────────────────────
+
 export function formatDate(dateStr?: string): string {
   if (!dateStr) return '—'
   const date = new Date(dateStr)
@@ -18,6 +20,26 @@ export function formatDateShort(dateStr?: string): string {
   })
 }
 
+// ─── PDF-safe (pure string, tanpa Intl/toLocaleDateString) ───────────────────
+// @react-pdf/renderer pakai custom JS engine — locale date formatting tidak tersedia.
+
+const MONTHS_ID = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+]
+
+export function formatDatePdf(dateStr?: string): string {
+  if (!dateStr) return '—'
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return '—'
+  const day = date.getDate()
+  const month = MONTHS_ID[date.getMonth()]
+  const year = date.getFullYear()
+  return `${day} ${month} ${year}`
+}
+
+// ─── Shared utils ─────────────────────────────────────────────────────────────
+
 export function toISODate(date: Date = new Date()): string {
   return date.toISOString().split('T')[0]
 }
@@ -31,10 +53,6 @@ export function addDays(dateStr: string, days: number): string {
 export function isOverdue(dueDate?: string): boolean {
   if (!dueDate) return false
   return new Date(dueDate) < new Date()
-}
-
-export function getDueDateFromIssue(issueDate: string, dueDays: number): string {
-  return addDays(issueDate, dueDays)
 }
 
 export function getMonthYear(dateStr: string): string {

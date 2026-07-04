@@ -2,7 +2,6 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db, type Document } from '../db/database'
 import { generateDocumentNumber } from '../lib/documentNumber'
 
-// Returns undefined while loading, then the array
 export function useDocuments(type?: 'invoice' | 'quote') {
   return useLiveQuery(async () => {
     if (type) {
@@ -19,12 +18,41 @@ export function useDocument(id?: number) {
   }, [id])
 }
 
+// Semua invoice/quote milik klien tertentu
+export function useClientDocuments(clientId: number) {
+  return useLiveQuery(async () => {
+    return db.documents
+      .where('clientId').equals(clientId)
+      .reverse()
+      .sortBy('createdAt')
+  }, [clientId]) ?? []
+}
+
 export async function createDocument(
   data: Omit<Document, 'id' | 'number' | 'createdAt' | 'updatedAt'>,
 ): Promise<number> {
   const number = await generateDocumentNumber(data.type)
   const now = Date.now()
   return db.documents.add({ ...data, number, createdAt: now, updatedAt: now })
+}
+
+export async function duplicateDocument(id: number): Promise<number> {
+  const original = await db.documents.get(id)
+  if (!original) throw new Error('Dokumen tidak ditemukan')
+
+  const number = await generateDocumentNumber(original.type)
+  const now = Date.now()
+  const { id: _id, ...rest } = original
+
+  return db.documents.add({
+    ...rest,
+    number,
+    status: 'draft',
+    issueDate: new Date().toISOString().split('T')[0],
+    paidDate: undefined,
+    createdAt: now,
+    updatedAt: now,
+  })
 }
 
 export async function updateDocument(id: number, data: Partial<Document>): Promise<void> {

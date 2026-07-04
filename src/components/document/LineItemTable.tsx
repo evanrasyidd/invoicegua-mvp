@@ -7,18 +7,19 @@ interface LineItemTableProps {
   items: LineItem[]
   onChange: (items: LineItem[]) => void
   templates: ServiceTemplate[]
+  invalidIndexes?: number[]
 }
 
 const emptyItem = (): LineItem => ({
   name: '',
   description: '',
   qty: 1,
-  unit: 'project',
+  unit: 'item',
   price: 0,
   subtotal: 0,
 })
 
-export function LineItemTable({ items, onChange, templates }: LineItemTableProps) {
+export function LineItemTable({ items, onChange, templates, invalidIndexes = [] }: LineItemTableProps) {
   const handleChange = (index: number, item: LineItem) => {
     const next = [...items]
     next[index] = item
@@ -52,7 +53,7 @@ export function LineItemTable({ items, onChange, templates }: LineItemTableProps
       {/* Header */}
       <div className="grid grid-cols-[1fr_auto] px-3 py-2 bg-[var(--color-bg)] border-b border-[var(--color-border-light)]">
         <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
-          Layanan / Item
+          Item / Layanan
         </span>
         <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
           Subtotal
@@ -61,18 +62,24 @@ export function LineItemTable({ items, onChange, templates }: LineItemTableProps
 
       {/* Items */}
       {items.length === 0 ? (
-        <div className="py-6 text-center text-xs text-[var(--color-text-muted)]">
+        <div className="py-8 text-center text-xs text-[var(--color-text-muted)]">
           Belum ada item. Tambahkan dari template atau manual.
         </div>
       ) : (
         items.map((item, i) => (
-          <LineItemRow key={i} item={item} index={i} onChange={handleChange} onRemove={handleRemove} />
+          <LineItemRow
+            key={i}
+            item={item}
+            index={i}
+            onChange={handleChange}
+            onRemove={handleRemove}
+            showNameError={invalidIndexes.includes(i)}
+          />
         ))
       )}
 
       {/* Add actions */}
       <div className="p-3 border-t border-[var(--color-border-light)]">
-        {/* Templates quick-add */}
         {templates.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {templates.map((t) => (

@@ -3,23 +3,28 @@ import type { ReactElement } from 'react'
 
 /**
  * Generate dan download PDF dari @react-pdf/renderer Document element.
- * Tidak ada dependency html2canvas / jspdf — pure JS, zero known vulns.
- *
- * @param element  - React element yang return dari <PDFTemplate />
- * @param filename - nama file hasil download, contoh "INV-2025-001.pdf"
+ * Menggunakan formatIDRPdf dan formatDatePdf (bukan Intl API) supaya
+ * angka dan tanggal render dengan benar di dalam PDF engine.
  */
 export async function exportToPDF(element: ReactElement, filename: string): Promise<void> {
-  const instance = pdf(element)
-  const blob = await instance.toBlob()
-  const url = URL.createObjectURL(blob)
+  // Timeout 30 detik — antisipasi font CDN lambat
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('Timeout: font gagal dimuat. Coba lagi atau periksa koneksi.')), 30_000),
+  )
 
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename.endsWith('.pdf') ? filename : `${filename}.pdf`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
+  const generate = async () => {
+    const instance = pdf(element)
+    const blob = await instance.toBlob()
 
-  // Revoke setelah delay supaya download sempat mulai
-  setTimeout(() => URL.revokeObjectURL(url), 2000)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename.endsWith('.pdf') ? filename : `${filename}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    setTimeout(() => URL.revokeObjectURL(url), 2000)
+  }
+
+  await Promise.race([generate(), timeout])
 }

@@ -31,28 +31,45 @@ export function DocumentForm({
   const defaultTaxRateRaw = useSetting('defaultTaxRate')
   const defaultPaymentTermsRaw = useSetting('defaultPaymentTerms')
 
-  const defaultDueDays = parseInt(defaultDueDaysRaw ?? '3')
-  const defaultTaxRate = parseInt(defaultTaxRateRaw ?? '0')
-  const defaultPaymentTerms = defaultPaymentTermsRaw ?? ''
-
   const today = toISODate()
+  const isCreateMode = !initial
 
+  // State — init dengan fallback aman dulu
   const [clientId, setClientId] = useState<number | null>(initial?.clientId ?? null)
   const [clientSnapshot, setClientSnapshot] = useState(initial?.clientSnapshot ?? null)
   const [items, setItems] = useState<LineItem[]>(initial?.items ?? [])
   const [issueDate, setIssueDate] = useState(initial?.issueDate ?? today)
-  const [dueDate, setDueDate] = useState(initial?.dueDate ?? addDays(today, defaultDueDays))
+  const [dueDate, setDueDate] = useState(initial?.dueDate ?? addDays(today, 14))
   const [notes, setNotes] = useState(initial?.notes ?? '')
-  const [paymentTerms, setPaymentTerms] = useState(initial?.paymentTerms ?? defaultPaymentTerms)
+  const [paymentTerms, setPaymentTerms] = useState(initial?.paymentTerms ?? '')
   const [discountType, setDiscountType] = useState<'percent' | 'fixed' | undefined>(initial?.discountType)
   const [discountValue, setDiscountValue] = useState(initial?.discountValue ?? 0)
-  const [taxRate, setTaxRate] = useState(initial?.taxRate ?? defaultTaxRate)
+  const [taxRate, setTaxRate] = useState(initial?.taxRate ?? 0)
   const [dpPercent, setDpPercent] = useState(initial?.dpPercent ?? 0)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [invalidItemIndexes, setInvalidItemIndexes] = useState<number[]>([])
+
+  // Sync settings dari DB setelah selesai load — hanya untuk create mode
+  const settingsSynced = useRef(false)
+  useEffect(() => {
+    if (!isCreateMode) return
+    if (settingsSynced.current) return
+    // Tunggu semua setting selesai load (tidak null/undefined lagi)
+    if (defaultDueDaysRaw === undefined || defaultTaxRateRaw === undefined || defaultPaymentTermsRaw === undefined) return
+
+    const dueDays = parseInt(defaultDueDaysRaw ?? '14') || 14
+    const tax = parseInt(defaultTaxRateRaw ?? '0') || 0
+    const terms = defaultPaymentTermsRaw ?? ''
+
+    setDueDate(addDays(today, dueDays))
+    setTaxRate(tax)
+    setPaymentTerms(terms)
+    settingsSynced.current = true
+  }, [defaultDueDaysRaw, defaultTaxRateRaw, defaultPaymentTermsRaw, isCreateMode, today])
 
   const calc = calculateDocument(items, discountType, discountValue, taxRate, dpPercent)
 
-  // Stable ref for onPreviewChange to avoid stale closure
+  // Stable ref untuk onPreviewChange
   const onPreviewChangeRef = useRef(onPreviewChange)
   useEffect(() => { onPreviewChangeRef.current = onPreviewChange }, [onPreviewChange])
 
@@ -102,6 +119,17 @@ export function DocumentForm({
     const errs: Record<string, string> = {}
     if (!clientId) errs.client = 'Pilih klien terlebih dahulu'
     if (items.length === 0) errs.items = 'Tambahkan minimal satu item'
+
+    const emptyNameIndexes = items
+      .map((item, i) => (item.name.trim() === '' ? i : -1))
+      .filter((i) => i !== -1)
+    if (emptyNameIndexes.length > 0) {
+      errs.itemNames = 'Semua item harus memiliki nama'
+      setInvalidItemIndexes(emptyNameIndexes)
+    } else {
+      setInvalidItemIndexes([])
+    }
+
     return errs
   }
 
@@ -137,31 +165,71 @@ export function DocumentForm({
     'bg-[var(--color-bg)] border border-[var(--color-border)] text-sm rounded-[8px] px-[10px] py-[7px] w-full focus:outline-none focus:border-[var(--color-primary)] transition-colors text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)]'
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-24 md:pb-0">
       <ClientSelector value={clientId} onChange={handleClientChange} error={errors.client} />
 
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-[var(--color-text-secondary)]">Tanggal Terbit</label>
-          <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className={inputCls} style={{ borderWidth: '0.5px' }} />
+          <input
+            type="date"
+            value={issueDate}
+            onChange={(e) => setIssueDate(e.target.value)}
+            className={inputCls}
+            style={{ borderWidth: '0.5px' }}
+          />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-[var(--color-text-secondary)]">
             {type === 'invoice' ? 'Jatuh Tempo' : 'Berlaku Hingga'}
           </label>
-          <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputCls} style={{ borderWidth: '0.5px' }} />
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className={inputCls}
+            style={{ borderWidth: '0.5px' }}
+          />
         </div>
       </div>
 
       <div>
-        <label className="text-xs font-medium text-[var(--color-text-secondary)] block mb-2">Item / Layanan</label>
-        <div className="border border-[var(--color-border)] rounded-xl overflow-hidden bg-[var(--color-surface)]" style={{ borderWidth: '0.5px' }}>
-          <LineItemTable items={items} onChange={setItems} templates={templates} />
+        <label className="text-xs font-medium text-[var(--color-text-secondary)] block mb-2">
+          Item / Layanan
+        </label>
+        <div
+          className="border border-[var(--color-border)] rounded-xl overflow-hidden bg-[var(--color-surface)]"
+          style={{ borderWidth: '0.5px' }}
+        >
+          <LineItemTable
+            items={items}
+            onChange={(next) => {
+              setItems(next)
+              if (errors.items || errors.itemNames) {
+                setErrors((e) => {
+                  const next = { ...e }
+                  delete next['items']
+                  delete next['itemNames']
+                  return next
+                })
+              }
+              setInvalidItemIndexes([])
+            }}
+            templates={templates}
+            invalidIndexes={invalidItemIndexes}
+          />
         </div>
-        {errors.items && <span className="text-xs text-red-500 mt-1 block">{errors.items}</span>}
+        {(errors.items || errors.itemNames) && (
+          <span className="text-xs text-red-500 mt-1 block">
+            {errors.items ?? errors.itemNames}
+          </span>
+        )}
       </div>
 
-      <div className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)]" style={{ borderWidth: '0.5px' }}>
+      <div
+        className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)]"
+        style={{ borderWidth: '0.5px' }}
+      >
         <TotalsSection
           subtotal={calc.subtotal}
           discountType={discountType}
@@ -193,12 +261,14 @@ export function DocumentForm({
         </div>
         {type === 'invoice' && (
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-[var(--color-text-secondary)]">Syarat Pembayaran</label>
+            <label className="text-xs font-medium text-[var(--color-text-secondary)]">
+              Syarat Pembayaran
+            </label>
             <input
               type="text"
               value={paymentTerms}
               onChange={(e) => setPaymentTerms(e.target.value)}
-              placeholder="Transfer dalam 3 hari kerja..."
+              placeholder="Transfer dalam 14 hari kerja..."
               className={inputCls}
               style={{ borderWidth: '0.5px' }}
             />
@@ -206,16 +276,43 @@ export function DocumentForm({
         )}
       </div>
 
-      <div className="flex gap-2 pt-1">
-        <Button onClick={() => handleSubmit('sent')} loading={loading} className="flex-1">
-          {initial ? 'Simpan Perubahan' : type === 'invoice' ? 'Buat Invoice' : 'Buat Penawaran'}
-        </Button>
-        <Button variant="ghost" onClick={() => handleSubmit('draft')} loading={loading}>
+      {/* Desktop CTA */}
+      <div className="hidden md:flex gap-2 pt-1">
+        <Button onClick={() => handleSubmit('draft')} variant="ghost" loading={loading}>
           Simpan Draft
+        </Button>
+        <Button onClick={() => handleSubmit('sent')} loading={loading} className="flex-1">
+          {initial
+            ? 'Simpan Perubahan'
+            : type === 'invoice'
+            ? 'Buat & Kirim Invoice'
+            : 'Buat & Kirim Penawaran'}
         </Button>
         {onCancel && (
           <Button variant="ghost" onClick={onCancel}>Batal</Button>
         )}
+      </div>
+
+      {/* Mobile sticky CTA */}
+      <div
+        className="md:hidden fixed bottom-16 left-0 right-0 z-20 px-4 py-3 bg-[var(--color-surface)] border-t border-[var(--color-border)]"
+        style={{ borderWidth: '0.5px' }}
+      >
+        <div className="flex gap-2 max-w-lg mx-auto">
+          <Button onClick={() => handleSubmit('draft')} variant="ghost" loading={loading} size="sm">
+            Draft
+          </Button>
+          <Button onClick={() => handleSubmit('sent')} loading={loading} className="flex-1" size="sm">
+            {initial
+              ? 'Simpan'
+              : type === 'invoice'
+              ? 'Buat Invoice'
+              : 'Buat Penawaran'}
+          </Button>
+          {onCancel && (
+            <Button variant="ghost" onClick={onCancel} size="sm">Batal</Button>
+          )}
+        </div>
       </div>
     </div>
   )

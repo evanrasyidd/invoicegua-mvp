@@ -9,11 +9,17 @@ interface LineItemRowProps {
   index: number
   onChange: (index: number, item: LineItem) => void
   onRemove: (index: number) => void
+  showNameError?: boolean
 }
 
-const UNITS = ['project', 'halaman', 'jam', 'item', 'bulan', 'tahun', 'kali', 'paket']
+const UNITS = [
+  'item', 'pcs', 'unit', 'buah',
+  'jam', 'hari', 'minggu', 'bulan', 'tahun',
+  'kg', 'gram', 'liter', 'meter', 'm²',
+  'project', 'paket', 'kali', 'sesi', 'lembar',
+]
 
-export function LineItemRow({ item, index, onChange, onRemove }: LineItemRowProps) {
+export function LineItemRow({ item, index, onChange, onRemove, showNameError }: LineItemRowProps) {
   const update = (patch: Partial<LineItem>) => {
     const updated = { ...item, ...patch }
     if ('qty' in patch || 'price' in patch) {
@@ -23,7 +29,7 @@ export function LineItemRow({ item, index, onChange, onRemove }: LineItemRowProp
   }
 
   return (
-    <div className="group grid gap-2 p-3 border-b border-[var(--color-border-light)] last:border-b-0 hover:bg-[var(--color-bg)] transition-colors">
+    <div className={`group grid gap-2 p-3 border-b border-[var(--color-border-light)] last:border-b-0 hover:bg-[var(--color-bg)] transition-colors ${showNameError ? 'bg-red-50/40' : ''}`}>
       {/* Row 1: drag handle + name + delete */}
       <div className="flex items-start gap-2">
         <div className="mt-[9px] text-[var(--color-text-muted)] opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
@@ -34,9 +40,14 @@ export function LineItemRow({ item, index, onChange, onRemove }: LineItemRowProp
             type="text"
             value={item.name}
             onChange={(e) => update({ name: e.target.value })}
-            placeholder="Nama layanan"
-            className="w-full bg-transparent text-sm font-medium text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none"
+            placeholder="Nama item / layanan"
+            className={`w-full bg-transparent text-sm font-medium placeholder:text-[var(--color-text-muted)] focus:outline-none ${
+              showNameError ? 'text-red-500 placeholder:text-red-300' : 'text-[var(--color-text-primary)]'
+            }`}
           />
+          {showNameError && (
+            <span className="text-[10px] text-red-500">Nama item wajib diisi</span>
+          )}
           <input
             type="text"
             value={item.description ?? ''}
@@ -56,12 +67,13 @@ export function LineItemRow({ item, index, onChange, onRemove }: LineItemRowProp
       </div>
 
       {/* Row 2: qty, unit, price, subtotal */}
-      <div className="grid grid-cols-[60px_100px_1fr_1fr] gap-2 pl-5">
+      <div className="grid grid-cols-[60px_120px_1fr_1fr] gap-2 pl-5">
         <div className="flex flex-col gap-1">
           <label className="text-[10px] text-[var(--color-text-muted)]">Qty</label>
           <input
             type="number"
-            min="1"
+            min="0.01"
+            step="0.01"
             value={item.qty}
             onChange={(e) => update({ qty: parseFloat(e.target.value) || 1 })}
             className="bg-[var(--color-bg)] border border-[var(--color-border)] text-sm rounded-[6px] px-2 py-[5px] w-full focus:outline-none focus:border-[var(--color-primary)] tabular-nums text-[var(--color-text-primary)]"

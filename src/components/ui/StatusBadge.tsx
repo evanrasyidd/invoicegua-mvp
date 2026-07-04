@@ -1,10 +1,10 @@
 type Status = 'draft' | 'sent' | 'paid' | 'overdue'
 
 const STATUS_CONFIG: Record<Status, { label: string; bg: string; text: string }> = {
-  draft: { label: 'Draft', bg: 'var(--status-draft-bg)', text: 'var(--status-draft-text)' },
-  sent: { label: 'Dikirim', bg: 'var(--status-sent-bg)', text: 'var(--status-sent-text)' },
-  paid: { label: 'Lunas', bg: 'var(--status-paid-bg)', text: 'var(--status-paid-text)' },
-  overdue: { label: 'Belum lunas', bg: 'var(--status-overdue-bg)', text: 'var(--status-overdue-text)' },
+  draft:   { label: 'Draft',     bg: 'var(--status-draft-bg)',   text: 'var(--status-draft-text)' },
+  sent:    { label: 'Dikirim',   bg: 'var(--status-sent-bg)',    text: 'var(--status-sent-text)' },
+  paid:    { label: 'Lunas',     bg: 'var(--status-paid-bg)',    text: 'var(--status-paid-text)' },
+  overdue: { label: 'Terlambat', bg: 'var(--status-overdue-bg)', text: 'var(--status-overdue-text)' },
 }
 
 interface StatusBadgeProps {

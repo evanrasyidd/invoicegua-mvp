@@ -1,13 +1,13 @@
 import { DocumentList } from '../components/document/DocumentList'
+import { OnboardingBanner } from '../components/ui/OnboardingBanner'
 
 export function InvoiceList() {
   return (
     <div className="p-5 md:p-8 max-w-4xl mx-auto">
+      <OnboardingBanner />
       <div className="mb-6">
         <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">Invoice</h1>
-        <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
-          Kelola semua invoice kamu
-        </p>
+        <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Kelola semua invoice kamu</p>
       </div>
       <DocumentList type="invoice" />
     </div>

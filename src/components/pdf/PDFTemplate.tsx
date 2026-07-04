@@ -9,8 +9,8 @@ import {
 } from '@react-pdf/renderer'
 import type { Document as InvoiceDoc } from '../../db/database'
 import type { BusinessProfile, BankInfo } from '../../hooks/useBusinessProfile'
-import { formatIDR } from '../../lib/currency'
-import { formatDate } from '../../lib/dateUtils'
+import { formatIDRPdf as formatIDR } from '../../lib/currency'
+import { formatDatePdf as formatDate } from '../../lib/dateUtils'
 
 // Font dari Google Fonts CDN — di-load saat PDF di-generate.
 // CSP di vercel.json sudah mengizinkan fonts.gstatic.com.
