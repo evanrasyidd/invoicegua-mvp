@@ -1,19 +1,17 @@
 interface SkeletonProps {
   className?: string
-  lines?: number
 }
 
 export function Skeleton({ className = '' }: SkeletonProps) {
-  return (
-    <div
-      className={`animate-pulse bg-[var(--color-border)] rounded-md ${className}`}
-    />
-  )
+  return <div className={`skeleton-shimmer rounded-md ${className}`} />
 }
 
 export function SkeletonCard() {
   return (
-    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5 space-y-3" style={{ borderWidth: '0.5px' }}>
+    <div
+      className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5 space-y-3"
+      style={{ borderWidth: '0.5px' }}
+    >
       <Skeleton className="h-4 w-24" />
       <Skeleton className="h-7 w-40" />
       <Skeleton className="h-3 w-32" />

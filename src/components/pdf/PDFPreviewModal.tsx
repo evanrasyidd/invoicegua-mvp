@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { IconX, IconDownload, IconLoader2 } from '@tabler/icons-react'
+import { IconX, IconDownload } from '@tabler/icons-react'
 import type { Document } from '../../db/database'
 import type { BusinessProfile, BankInfo } from '../../hooks/useBusinessProfile'
 import { PDFPreview } from './PDFPreview'
 import { PDFTemplate } from './PDFTemplate'
 import { exportToPDF } from '../../lib/pdfExport'
 import { useAppStore } from '../../store/useAppStore'
+import { Spinner } from '../ui/Spinner'
 
 interface PDFPreviewModalProps {
   open: boolean
@@ -86,7 +87,7 @@ export function PDFPreviewModal({
                   className="flex items-center gap-1.5 bg-[var(--color-primary)] text-[var(--color-surface)] text-xs font-medium px-3 sm:px-3.5 py-2 rounded-[8px] hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer whitespace-nowrap"
                 >
                   {exporting ? (
-                    <IconLoader2 size={13} className="animate-spin shrink-0" />
+                    <Spinner size={13} className="shrink-0" />
                   ) : (
                     <IconDownload size={13} className="shrink-0" />
                   )}

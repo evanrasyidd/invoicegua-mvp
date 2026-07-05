@@ -31,11 +31,29 @@ async function initDB() {
   }
 }
 
-initDB().then(() => {
+function mountApp() {
   const container = document.getElementById('root')!
   createRoot(container).render(
     <StrictMode>
       <App />
     </StrictMode>,
   )
-})
+
+  // React udah mount — fade-out splash screen statis dari index.html,
+  // baru dihapus dari DOM setelah transisinya kelar.
+  const splash = document.getElementById('splash')
+  if (splash) {
+    splash.classList.add('splash-hidden')
+    setTimeout(() => splash.remove(), 300)
+  }
+}
+
+initDB()
+  .then(mountApp)
+  .catch((err) => {
+    // Jangan biarin splash nyangkut selamanya kalau IndexedDB gagal dibuka
+    // (misal private browsing mode yang strict). Tetap coba mount app —
+    // kemungkinan besar masih bisa jalan walau seed data gagal.
+    console.error('initDB gagal:', err)
+    mountApp()
+  })

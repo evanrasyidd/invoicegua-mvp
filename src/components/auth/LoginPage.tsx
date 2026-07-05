@@ -5,6 +5,7 @@ import { IconEye, IconEyeOff, IconArrowRight, IconAlertCircle } from '@tabler/ic
 import { login, register, hasAnyUser } from '../../lib/auth'
 import { useAuthStore } from '../../store/useAuthStore'
 import { SpecimenInvoicePanel } from './SpecimenInvoicePanel'
+import { Spinner } from '../ui/Spinner'
 
 type Mode = 'login' | 'register'
 
@@ -256,7 +257,7 @@ export function LoginPage() {
                 className="w-full flex items-center justify-center gap-2 bg-[#0F0F0F] text-white text-sm font-medium py-2.5 rounded-[8px] hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-1"
               >
                 {loading ? (
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <Spinner size={14} />
                 ) : (
                   <>
                     {mode === 'login' ? 'Masuk' : firstRun ? 'Buat Akun & Mulai' : 'Daftar'}
