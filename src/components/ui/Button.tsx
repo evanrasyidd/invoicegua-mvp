@@ -9,13 +9,20 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', size = 'md', loading, children, disabled, className = '', ...props }, ref) => {
     const base =
-      'inline-flex items-center justify-center gap-2 font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer rounded-[8px]'
+      'inline-flex items-center justify-center gap-2 font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer rounded-[8px]'
 
+    // Pakai CSS variable (bukan hex hardcode) supaya otomatis kebalik warnanya
+    // pas ganti tema, dan bg-nya sengaja beda dari --color-surface (warna Card)
+    // supaya ghost/danger button ga nyatu sama container-nya di light maupun dark mode.
     const variants: Record<string, string> = {
-      primary: 'bg-[#0F0F0F] text-white hover:bg-[#2a2a2a] border border-[#0F0F0F] dark:bg-white dark:text-[#0F0F0F] dark:hover:bg-[#e5e5e5] dark:border-white',
-      ghost: 'bg-white text-[#0F0F0F] border border-[#E5E7EB] hover:bg-[#F9FAFB] dark:bg-[#111] dark:text-white dark:border-[#1F1F1F] dark:hover:bg-[#1a1a1a]',
-      danger: 'bg-white text-red-600 border border-[#E5E7EB] hover:bg-red-50 dark:bg-[#111] dark:border-[#1F1F1F]',
-      whatsapp: 'bg-[#25D366] text-white hover:bg-[#1db954] border border-[#25D366]',
+      primary:
+        'bg-[var(--color-primary)] text-[var(--color-surface)] border border-[var(--color-primary)] hover:opacity-85',
+      ghost:
+        'bg-[var(--color-bg)] text-[var(--color-text-primary)] border border-[var(--color-border-strong)] hover:bg-[var(--color-border-light)]',
+      danger:
+        'bg-[var(--color-bg)] text-red-600 border border-[var(--color-border-strong)] hover:bg-red-50 dark:hover:bg-red-950/30',
+      whatsapp:
+        'bg-[#25D366] text-white border border-[#25D366] hover:bg-[#1db954]',
     }
 
     const sizes: Record<string, string> = {

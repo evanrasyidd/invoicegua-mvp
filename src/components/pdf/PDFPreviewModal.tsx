@@ -70,31 +70,33 @@ export function PDFPreviewModal({
             className="relative z-10 w-full max-w-2xl max-h-[90vh] flex flex-col bg-[var(--color-surface)] rounded-2xl overflow-hidden shadow-2xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-border-light)] shrink-0">
-              <div>
-                <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">
+            <div className="flex items-center justify-between gap-2 px-5 py-4 border-b border-[var(--color-border-light)] shrink-0">
+              <div className="min-w-0">
+                <h2 className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
                   Preview PDF
                 </h2>
-                <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">
+                <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5 truncate">
                   {doc.number} · {doc.clientSnapshot.name}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={handleExport}
                   disabled={exporting}
-                  className="flex items-center gap-1.5 bg-[var(--color-primary)] text-[var(--color-surface)] text-xs font-medium px-3.5 py-2 rounded-[8px] hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
+                  className="flex items-center gap-1.5 bg-[var(--color-primary)] text-[var(--color-surface)] text-xs font-medium px-3 sm:px-3.5 py-2 rounded-[8px] hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer whitespace-nowrap"
                 >
                   {exporting ? (
-                    <IconLoader2 size={13} className="animate-spin" />
+                    <IconLoader2 size={13} className="animate-spin shrink-0" />
                   ) : (
-                    <IconDownload size={13} />
+                    <IconDownload size={13} className="shrink-0" />
                   )}
-                  {exporting ? 'Membuat PDF...' : 'Unduh PDF'}
+                  <span className="hidden sm:inline">
+                    {exporting ? 'Membuat PDF...' : 'Unduh PDF'}
+                  </span>
                 </button>
                 <button
                   onClick={onClose}
-                  className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer rounded-[6px] hover:bg-[var(--color-bg)]"
+                  className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer rounded-[6px] hover:bg-[var(--color-bg)] shrink-0"
                   aria-label="Tutup preview"
                 >
                   <IconX size={16} />

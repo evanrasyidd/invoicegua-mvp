@@ -7,6 +7,7 @@ import { ClientForm } from './ClientForm'
 import { Button } from '../ui/Button'
 import { EmptyState } from '../ui/EmptyState'
 import { useAppStore } from '../../store/useAppStore'
+import { confirmDialog } from '../../store/useConfirmStore'
 import { ClientDocumentHistory } from './ClientDocumentHistory'
 
 export function ClientList() {
@@ -24,9 +25,13 @@ export function ClientList() {
   )
 
   const handleDelete = async (client: Client) => {
-    if (!confirm(
-      `Hapus "${client.name}"?\n\nInvoice yang sudah dibuat untuk klien ini tidak akan terhapus.`
-    )) return
+    const ok = await confirmDialog({
+      title: `Hapus "${client.name}"?`,
+      description: 'Invoice yang sudah dibuat untuk klien ini tidak akan terhapus.',
+      variant: 'danger',
+      confirmLabel: 'Hapus',
+    })
+    if (!ok) return
     await deleteClient(client.id!)
     showToast('Klien dihapus', 'info')
     if (expandedId === client.id) setExpandedId(null)

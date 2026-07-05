@@ -14,6 +14,10 @@ type FormState = Omit<Client, 'id' | 'createdAt'>
 
 const empty: FormState = { name: '', company: '', email: '', phone: '', address: '', notes: '' }
 
+// Regex simpel — cukup buat nangkep typo jelas ("asdasd", "budi.com"),
+// bukan RFC 5322 lengkap. Validasi ketat malah nolak email valid yang jarang.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export function ClientForm({ initial, onDone }: ClientFormProps) {
   const { showToast } = useAppStore()
   const [form, setForm] = useState<FormState>(
@@ -30,6 +34,20 @@ export function ClientForm({ initial, onDone }: ClientFormProps) {
   const validate = () => {
     const errs: Partial<FormState> = {}
     if (!form.name.trim()) errs.name = 'Nama wajib diisi'
+
+    if (form.email?.trim() && !EMAIL_RE.test(form.email.trim())) {
+      errs.email = 'Format email tidak valid'
+    }
+
+    if (form.phone?.trim()) {
+      const digitCount = form.phone.replace(/\D/g, '').length
+      if (digitCount < 8) {
+        // Nomor HP dipakai buat tombol kirim WA — kalau formatnya rusak,
+        // link WA jadi kosong/gagal tanpa pemberitahuan apapun ke user.
+        errs.phone = 'Nomor HP tidak valid (minimal 8 digit)'
+      }
+    }
+
     return errs
   }
 
@@ -53,13 +71,19 @@ export function ClientForm({ initial, onDone }: ClientFormProps) {
     }
   }
 
-  const field = (key: keyof FormState, label: string, placeholder: string, required = false) => (
+  const field = (
+    key: keyof FormState,
+    label: string,
+    placeholder: string,
+    required = false,
+    inputType = 'text',
+  ) => (
     <div className="flex flex-col gap-1">
       <label className="text-xs font-medium text-[var(--color-text-secondary)]">
         {label} {required && '*'}
       </label>
       <input
-        type="text"
+        type={inputType}
         value={form[key] as string}
         onChange={(e) => set(key, e.target.value)}
         placeholder={placeholder}
@@ -80,8 +104,8 @@ export function ClientForm({ initial, onDone }: ClientFormProps) {
       </div>
       {field('name', 'Nama', 'Budi Santoso', true)}
       {field('company', 'Perusahaan', 'PT Maju Jaya')}
-      {field('email', 'Email', 'budi@majujaya.com')}
-      {field('phone', 'No. HP', '08123456789')}
+      {field('email', 'Email', 'budi@majujaya.com', false, 'email')}
+      {field('phone', 'No. HP', '08123456789', false, 'tel')}
       {field('address', 'Alamat', 'Jl. Sudirman No. 1, Jakarta')}
       <div className="flex flex-col gap-1">
         <label className="text-xs font-medium text-[var(--color-text-secondary)]">Catatan</label>

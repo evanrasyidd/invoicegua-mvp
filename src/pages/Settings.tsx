@@ -13,6 +13,8 @@ import {
   type BankInfo,
 } from '../hooks/useBusinessProfile'
 import { useAppStore } from '../store/useAppStore'
+import { confirmDialog } from '../store/useConfirmStore'
+import { AccountSection } from '../components/auth/AccountSection'
 import { ServiceTemplateList } from '../components/service/ServiceTemplateList'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -105,8 +107,22 @@ export function Settings() {
   }
 
   const handleFactoryReset = async () => {
-    if (!confirm('Reset semua data? SEMUA invoice, klien, dan pengaturan akan dihapus permanen.')) return
-    if (!confirm('Yakin? Ini tidak bisa dibatalkan.')) return
+    const step1 = await confirmDialog({
+      title: 'Reset semua data?',
+      description: 'SEMUA invoice, klien, dan pengaturan akan dihapus permanen. Akun login tidak akan terhapus.',
+      variant: 'danger',
+      confirmLabel: 'Lanjutkan',
+    })
+    if (!step1) return
+
+    const step2 = await confirmDialog({
+      title: 'Yakin mau reset?',
+      description: 'Ini tindakan terakhir — data tidak bisa dikembalikan setelah ini.',
+      variant: 'danger',
+      confirmLabel: 'Ya, Reset Sekarang',
+    })
+    if (!step2) return
+
     await factoryReset()
     showToast('Data direset ke awal', 'info')
     setTimeout(() => window.location.reload(), 1000)
@@ -143,6 +159,9 @@ export function Settings() {
           Konfigurasi profil bisnis dan preferensi
         </p>
       </div>
+
+      {/* Akun — akses ganti password & keluar, penting untuk mobile */}
+      <AccountSection />
 
       {/* Business profile */}
       <section>

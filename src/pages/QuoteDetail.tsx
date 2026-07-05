@@ -12,6 +12,7 @@ import {
 import { useDocument, updateDocument, deleteDocument, createDocument, duplicateDocument } from '../hooks/useDocuments'
 import { useBusinessProfile, useBankInfo, useLogoBase64 } from '../hooks/useBusinessProfile'
 import { useAppStore } from '../store/useAppStore'
+import { confirmDialog } from '../store/useConfirmStore'
 import { StatusUpdater } from '../components/document/StatusUpdater'
 import { DocumentForm } from '../components/document/DocumentForm'
 import { PDFPreviewModal } from '../components/pdf/PDFPreviewModal'
@@ -65,7 +66,13 @@ export function QuoteDetail() {
   }
 
   const handleDelete = async () => {
-    if (!confirm('Hapus penawaran ini? Tindakan ini tidak bisa dibatalkan.')) return
+    const ok = await confirmDialog({
+      title: 'Hapus penawaran ini?',
+      description: 'Tindakan ini tidak bisa dibatalkan.',
+      variant: 'danger',
+      confirmLabel: 'Hapus',
+    })
+    if (!ok) return
     await deleteDocument(doc.id!)
     showToast('Penawaran dihapus', 'info')
     navigate('/quote')
@@ -91,7 +98,12 @@ export function QuoteDetail() {
   }
 
   const handleConvertToInvoice = async () => {
-    if (!confirm('Ubah penawaran ini menjadi invoice?')) return
+    const ok = await confirmDialog({
+      title: 'Ubah penawaran ini menjadi invoice?',
+      description: 'Invoice baru akan dibuat sebagai draft dengan data yang sama.',
+      confirmLabel: 'Ubah jadi Invoice',
+    })
+    if (!ok) return
     setConverting(true)
     try {
       const invoiceId = await createDocument({

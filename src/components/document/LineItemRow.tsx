@@ -75,7 +75,11 @@ export function LineItemRow({ item, index, onChange, onRemove, showNameError }: 
             min="0.01"
             step="0.01"
             value={item.qty}
-            onChange={(e) => update({ qty: parseFloat(e.target.value) || 1 })}
+            onChange={(e) => {
+              const val = parseFloat(e.target.value)
+              // Tolak negatif/nol/NaN — jangan biarin qty invalid ngerusak subtotal
+              update({ qty: Number.isFinite(val) && val > 0 ? val : 1 })
+            }}
             className="bg-[var(--color-bg)] border border-[var(--color-border)] text-sm rounded-[6px] px-2 py-[5px] w-full focus:outline-none focus:border-[var(--color-primary)] tabular-nums text-[var(--color-text-primary)]"
             style={{ borderWidth: '0.5px' }}
           />

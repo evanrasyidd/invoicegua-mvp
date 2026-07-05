@@ -1,11 +1,17 @@
 @import "tailwindcss";
 
+/* Tailwind v4 default: dark: mengikuti prefers-color-scheme (OS), bukan class.
+   App ini toggle tema manual via .dark class di <html> (lihat useAppStore),
+   jadi harus override supaya dark: konsisten sama toggle theme di UI. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary: #0F0F0F;
   --color-surface: #FFFFFF;
   --color-bg: #F9FAFB;
   --color-border: #E5E7EB;
   --color-border-light: #F3F4F6;
+  --color-border-strong: #D1D5DB;
 
   --color-text-primary: #0F0F0F;
   --color-text-secondary: #6B7280;
@@ -23,6 +29,7 @@
   --color-bg: #F9FAFB;
   --color-border: #E5E7EB;
   --color-border-light: #F3F4F6;
+  --color-border-strong: #D1D5DB;
   --color-text-primary: #0F0F0F;
   --color-text-secondary: #6B7280;
   --color-text-muted: #9CA3AF;
@@ -48,6 +55,7 @@
   --color-bg: #0A0A0A;
   --color-border: #1F1F1F;
   --color-border-light: #1A1A1A;
+  --color-border-strong: #333333;
   --color-text-primary: #F9FAFB;
   --color-text-secondary: #9CA3AF;
   --color-text-muted: #6B7280;

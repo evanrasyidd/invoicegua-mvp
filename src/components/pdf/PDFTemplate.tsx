@@ -157,8 +157,14 @@ export function PDFTemplate({ doc, business, bank, logo }: PDFTemplateProps) {
           <Text style={[s.thText, s.colTotal]}>Subtotal</Text>
         </View>
 
+        {/* wrap={false} — cegah satu baris item kepotong pas persis di batas halaman.
+            Catatan: react-pdf gak punya konsep <thead> yang repeat otomatis kayak HTML,
+            jadi kalau item > ~20 baris dan overflow ke halaman 2, header kolom
+            (Layanan/Qty/Harga/Subtotal) gak keulang di situ. Cukup buat use case
+            invoice freelancer/UMKM biasa; kalau nanti butuh multi-halaman rapi,
+            perlu logic chunking manual per halaman. */}
         {doc.items.map((item, i) => (
-          <View key={i} style={s.tableRow}>
+          <View key={i} style={s.tableRow} wrap={false}>
             <View style={s.colName}>
               <Text style={s.tdName}>{item.name}</Text>
               {item.description ? <Text style={s.tdDesc}>{item.description}</Text> : null}

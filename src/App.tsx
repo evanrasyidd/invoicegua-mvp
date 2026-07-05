@@ -13,6 +13,8 @@ import { QuoteDetail } from './pages/QuoteDetail'
 import { Clients } from './pages/Clients'
 import { Settings } from './pages/Settings'
 import { useAuthStore } from './store/useAuthStore'
+import { PWAUpdatePrompt } from './components/ui/PWAUpdatePrompt'
+import { ConfirmDialog } from './components/ui/ConfirmDialog'
 
 function ProtectedApp() {
   return (
@@ -54,6 +56,8 @@ export function App() {
         <Route path="/*" element={<ProtectedApp />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <PWAUpdatePrompt />
+      <ConfirmDialog />
     </BrowserRouter>
   )
 }

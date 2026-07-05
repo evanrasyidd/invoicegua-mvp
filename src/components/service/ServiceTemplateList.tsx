@@ -8,6 +8,7 @@ import { Button } from '../ui/Button'
 import { EmptyState } from '../ui/EmptyState'
 import { formatIDR } from '../../lib/currency'
 import { useAppStore } from '../../store/useAppStore'
+import { confirmDialog } from '../../store/useConfirmStore'
 
 export function ServiceTemplateList() {
   const templates = useServiceTemplates()
@@ -16,7 +17,13 @@ export function ServiceTemplateList() {
   const [editing, setEditing] = useState<ServiceTemplate | null>(null)
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Hapus template ini?')) return
+    const ok = await confirmDialog({
+      title: 'Hapus template ini?',
+      description: 'Template yang sudah dipakai di invoice/penawaran lama tidak akan berubah.',
+      variant: 'danger',
+      confirmLabel: 'Hapus',
+    })
+    if (!ok) return
     await deleteServiceTemplate(id)
     showToast('Template dihapus', 'info')
   }

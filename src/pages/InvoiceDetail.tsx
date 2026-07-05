@@ -12,6 +12,7 @@ import {
 import { useDocument, updateDocument, deleteDocument, duplicateDocument } from '../hooks/useDocuments'
 import { useBusinessProfile, useBankInfo, useLogoBase64 } from '../hooks/useBusinessProfile'
 import { useAppStore } from '../store/useAppStore'
+import { confirmDialog } from '../store/useConfirmStore'
 import { StatusUpdater } from '../components/document/StatusUpdater'
 import { DocumentForm } from '../components/document/DocumentForm'
 import { PDFPreviewModal } from '../components/pdf/PDFPreviewModal'
@@ -65,7 +66,13 @@ export function InvoiceDetail() {
   }
 
   const handleDelete = async () => {
-    if (!confirm('Hapus invoice ini? Tindakan ini tidak bisa dibatalkan.')) return
+    const ok = await confirmDialog({
+      title: 'Hapus invoice ini?',
+      description: 'Tindakan ini tidak bisa dibatalkan.',
+      variant: 'danger',
+      confirmLabel: 'Hapus',
+    })
+    if (!ok) return
     await deleteDocument(doc.id!)
     showToast('Invoice dihapus', 'info')
     navigate('/invoice')
