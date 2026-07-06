@@ -5,40 +5,28 @@ import {
   View,
   StyleSheet,
   Image,
-  Font,
 } from '@react-pdf/renderer'
 import type { Document as InvoiceDoc } from '../../db/database'
 import type { BusinessProfile, BankInfo } from '../../hooks/useBusinessProfile'
 import { formatIDRPdf as formatIDR } from '../../lib/currency'
 import { formatDatePdf as formatDate } from '../../lib/dateUtils'
 
-// Font dari Google Fonts CDN — di-load saat PDF di-generate.
-// CSP di vercel.json sudah mengizinkan fonts.gstatic.com.
-// Kalau butuh offline-first, ganti src ke file lokal di /public/fonts/
-Font.register({
-  family: 'Inter',
-  fonts: [
-    {
-      src: 'https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2',
-      fontWeight: 400,
-    },
-    {
-      src: 'https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hiA.woff2',
-      fontWeight: 500,
-    },
-    {
-      src: 'https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYAZ9hiA.woff2',
-      fontWeight: 600,
-    },
-  ],
-})
-
-// Fallback ke Helvetica kalau font gagal load (offline / CSP block)
-Font.registerHyphenationCallback((word) => [word])
-
+// SENGAJA GAK PAKAI Font.register() custom (Inter dkk dari Google Fonts CDN).
+//
+// Kejadian nyata: Font.register() nunjuk ke URL CDN ber-hash spesifik
+// (mis. fonts.gstatic.com/.../v13/...woff2). Kalau fetch itu gagal — CDN
+// rotate hash, network timeout, CORS, atau apapun — react-pdf TETAP lanjut
+// generate PDF tanpa error, tapi semua teks yang pakai font itu jadi
+// INVISIBLE secara visual (walau teksnya tetap ada di text-layer PDF,
+// makanya masih bisa di-select/extract). User dapet PDF isinya "kosong"
+// tanpa notifikasi error apapun — parah buat dokumen resmi kayak invoice.
+//
+// Fix: pakai font standar bawaan PDF spec (Helvetica, Courier, dst) —
+// gak butuh fetch network sama sekali, dijamin selalu render, termasuk
+// offline penuh. Trade-off tipografi kecil, tapi 100% reliable > cantik
+// tapi kadang buta huruf.
 const s = StyleSheet.create({
   page: {
-    fontFamily: 'Inter',
     fontSize: 10,
     color: '#0F0F0F',
     padding: '40px 48px',
@@ -46,15 +34,15 @@ const s = StyleSheet.create({
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 28 },
   logo: { width: 64, height: 32, objectFit: 'contain', marginBottom: 6 },
-  businessName: { fontSize: 11, fontWeight: 500 },
+  businessName: { fontSize: 11, fontWeight: 'bold' },
   businessMeta: { fontSize: 9, color: '#6B7280', marginTop: 2 },
-  docType: { fontSize: 22, fontWeight: 600, letterSpacing: 1.5, textAlign: 'right', marginBottom: 6 },
+  docType: { fontSize: 22, fontWeight: 'bold', letterSpacing: 1.5, textAlign: 'right', marginBottom: 6 },
   docNumber: { fontSize: 10, color: '#6B7280', fontFamily: 'Courier', textAlign: 'right' },
   docDate: { fontSize: 9, color: '#6B7280', textAlign: 'right', marginTop: 2 },
   docDue: { fontSize: 9, color: '#EF4444', textAlign: 'right', marginTop: 2 },
   billBox: { backgroundColor: '#F9FAFB', padding: '12px 14px', borderRadius: 6, marginBottom: 24 },
   billLabel: { fontSize: 8, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 5 },
-  billName: { fontSize: 11, fontWeight: 500 },
+  billName: { fontSize: 11, fontWeight: 'bold' },
   billMeta: { fontSize: 9, color: '#6B7280', marginTop: 2 },
   tableHeader: {
     flexDirection: 'row',
@@ -75,10 +63,10 @@ const s = StyleSheet.create({
   colPrice: { width: 100, textAlign: 'right' },
   colTotal: { width: 100, textAlign: 'right' },
   thText: { fontSize: 8, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.5 },
-  tdName: { fontSize: 10, fontWeight: 500 },
+  tdName: { fontSize: 10, fontWeight: 'bold' },
   tdDesc: { fontSize: 8, color: '#6B7280', marginTop: 1 },
   tdMid: { fontSize: 10, color: '#374151' },
-  tdAmount: { fontSize: 10, fontWeight: 500 },
+  tdAmount: { fontSize: 10, fontWeight: 'bold' },
   totalsSection: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 },
   totalsBox: { width: 240 },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 4, paddingBottom: 4 },
@@ -92,14 +80,14 @@ const s = StyleSheet.create({
     paddingTop: 8,
     marginTop: 4,
   },
-  grandLabel: { fontSize: 12, fontWeight: 600 },
-  grandValue: { fontSize: 12, fontWeight: 600 },
+  grandLabel: { fontSize: 12, fontWeight: 'bold' },
+  grandValue: { fontSize: 12, fontWeight: 'bold' },
   notesBox: { backgroundColor: '#F9FAFB', padding: '10px 12px', borderRadius: 5, marginTop: 20 },
   notesLabel: { fontSize: 8, color: '#9CA3AF', marginBottom: 4 },
   notesText: { fontSize: 9, color: '#374151' },
   bankSection: { borderTopWidth: 1, borderTopColor: '#E5E7EB', paddingTop: 16, marginTop: 20 },
   bankLabel: { fontSize: 8, color: '#9CA3AF', marginBottom: 5 },
-  bankName: { fontSize: 11, fontWeight: 500 },
+  bankName: { fontSize: 11, fontWeight: 'bold' },
   bankMeta: { fontSize: 9, color: '#6B7280', marginTop: 2 },
   bankTerms: { fontSize: 9, color: '#6B7280', marginTop: 6 },
   footer: { textAlign: 'center', fontSize: 8, color: '#9CA3AF', marginTop: 40 },
@@ -210,7 +198,7 @@ export function PDFTemplate({ doc, business, bank, logo }: PDFTemplateProps) {
                 </View>
                 <View style={s.totalRow}>
                   <Text style={s.totalLabel}>Sisa pembayaran</Text>
-                  <Text style={[s.totalValue, { fontWeight: 500 }]}>
+                  <Text style={[s.totalValue, { fontWeight: 'bold' }]}>
                     {formatIDR(doc.total - doc.dpAmount)}
                   </Text>
                 </View>
