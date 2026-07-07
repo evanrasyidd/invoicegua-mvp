@@ -293,10 +293,10 @@ export function DocumentForm({
         )}
       </div>
 
-      {/* Mobile sticky CTA */}
+      {/* Mobile sticky CTA — posisi nambah di atas BottomNav, termasuk safe-area-nya */}
       <div
-        className="md:hidden fixed bottom-16 left-0 right-0 z-20 px-4 py-3 bg-[var(--color-surface)] border-t border-[var(--color-border)]"
-        style={{ borderWidth: '0.5px' }}
+        className="md:hidden fixed left-0 right-0 z-20 px-4 py-3 bg-[var(--color-surface)] border-t border-[var(--color-border)]"
+        style={{ borderWidth: '0.5px', bottom: 'calc(64px + var(--safe-bottom))' }}
       >
         <div className="flex gap-2 max-w-lg mx-auto">
           <Button onClick={() => handleSubmit('draft')} variant="ghost" loading={loading} size="sm">

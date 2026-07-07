@@ -19,7 +19,11 @@ export function BottomNav() {
   return (
     <nav
       className="md:hidden fixed bottom-0 left-0 right-0 z-30 flex bg-[var(--color-surface)] border-t"
-      style={{ borderColor: 'var(--color-border)', borderWidth: '0.5px' }}
+      style={{
+        borderColor: 'var(--color-border)',
+        borderWidth: '0.5px',
+        paddingBottom: 'var(--safe-bottom)',
+      }}
     >
       {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
         <NavLink

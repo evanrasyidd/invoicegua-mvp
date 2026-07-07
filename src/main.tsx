@@ -48,12 +48,25 @@ function mountApp() {
   }
 }
 
+// initDB() biasanya kelar dalam puluhan ms doang (Dexie count query ringan) —
+// tanpa minimum duration, splash nongol terus ilang secepat itu kerasa kayak
+// flicker/glitch, bukan loading state yang sengaja. Ditahan minimal segini
+// dulu sebelum mountApp(), supaya wordmark + dots sempat kebaca mata.
+const MIN_SPLASH_DURATION = 500
+const splashStartedAt = performance.now()
+
+function mountAppAfterMinDuration() {
+  const elapsed = performance.now() - splashStartedAt
+  const remaining = Math.max(0, MIN_SPLASH_DURATION - elapsed)
+  setTimeout(mountApp, remaining)
+}
+
 initDB()
-  .then(mountApp)
+  .then(mountAppAfterMinDuration)
   .catch((err) => {
     // Jangan biarin splash nyangkut selamanya kalau IndexedDB gagal dibuka
     // (misal private browsing mode yang strict). Tetap coba mount app —
     // kemungkinan besar masih bisa jalan walau seed data gagal.
     console.error('initDB gagal:', err)
-    mountApp()
+    mountAppAfterMinDuration()
   })

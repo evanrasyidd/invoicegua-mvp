@@ -66,6 +66,14 @@
   box-sizing: border-box;
 }
 
+/* Safe-area — env(safe-area-inset-*) cuma punya nilai non-zero kalau
+   viewport punya viewport-fit=cover DAN device beneran punya notch/home
+   indicator (iOS standalone PWA). Browser lain otomatis fallback ke 0px. */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 html {
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
