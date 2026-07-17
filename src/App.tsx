@@ -13,13 +13,23 @@ import { QuoteCreate } from './pages/QuoteCreate'
 import { QuoteDetail } from './pages/QuoteDetail'
 import { Clients } from './pages/Clients'
 import { Settings } from './pages/Settings'
+import { SettingsAccount } from './pages/SettingsAccount'
+import { SettingsBusiness } from './pages/SettingsBusiness'
+import { SettingsData } from './pages/SettingsData'
+import { Recurring } from './pages/Recurring'
 import { useAuthStore } from './store/useAuthStore'
+import { generateDueRecurring } from './hooks/useRecurring'
 import { PWAUpdatePrompt } from './components/ui/PWAUpdatePrompt'
 import { ConfirmDialog } from './components/ui/ConfirmDialog'
 
 function ProtectedApp() {
   const location = useLocation()
   const reduceMotion = useReducedMotion()
+
+  // Generate invoice recurring yang jatuh tempo tiap app mount
+  useEffect(() => {
+    generateDueRecurring().catch(() => {})
+  }, [])
 
   return (
     <AuthGuard>
@@ -45,7 +55,11 @@ function ProtectedApp() {
               <Route path="/quote/new" element={<QuoteCreate />} />
               <Route path="/quote/:id" element={<QuoteDetail />} />
               <Route path="/clients" element={<Clients />} />
+              <Route path="/recurring" element={<Recurring />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/settings/akun" element={<SettingsAccount />} />
+              <Route path="/settings/bisnis" element={<SettingsBusiness />} />
+              <Route path="/settings/data" element={<SettingsData />} />
               <Route path="*" element={
                 <div className="flex flex-col items-center justify-center min-h-screen gap-3">
                   <p className="text-sm font-medium text-[var(--color-text-primary)]">Halaman tidak ditemukan</p>

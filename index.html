@@ -4,9 +4,46 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Invoice & penawaran profesional, tanpa ribet" />
+    <meta name="description" content="InvoiceGua — buat invoice & penawaran profesional, export PDF, kirim via WhatsApp. Tanpa server, data tersimpan di browser. Untuk freelancer & bisnis kecil Indonesia." />
     <meta name="theme-color" content="#0F0F0F" />
-    <title>InvoiceGua</title>
+    <meta name="author" content="Evan Rasyid Ega Pratama" />
+    <link rel="canonical" href="https://invoicegua.vercel.app/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="InvoiceGua — Invoice & Penawaran Profesional" />
+    <meta property="og:description" content="Buat invoice profesional, export PDF, kirim via WhatsApp. Tanpa ribet, tanpa server." />
+    <meta property="og:url" content="https://invoicegua.vercel.app/" />
+    <meta property="og:site_name" content="InvoiceGua" />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:image" content="https://invoicegua.vercel.app/icons/512.png" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="InvoiceGua — Invoice & Penawaran Profesional" />
+    <meta name="twitter:description" content="Buat invoice profesional, export PDF, kirim via WhatsApp. Tanpa ribet, tanpa server." />
+    <meta name="twitter:image" content="https://invoicegua.vercel.app/icons/512.png" />
+
+    <title>InvoiceGua — Invoice & Penawaran Profesional</title>
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "InvoiceGua",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description": "PWA invoice & penawaran untuk freelancer dan bisnis kecil Indonesia.",
+      "url": "https://invoicegua.vercel.app/",
+      "author": {
+        "@type": "Person",
+        "name": "Evan Rasyid Ega Pratama",
+        "url": "https://github.com/evanrasyidd"
+      },
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "IDR" }
+    }
+    </script>
     <script>
       // Set tema SEBELUM apapun dirender — cegah flash tema salah (FOUC)
       // sekaligus bikin splash screen di bawah ikut tema yang benar.

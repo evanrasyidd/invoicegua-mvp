@@ -68,11 +68,41 @@ export interface Settings {
   value: string
 }
 
+export type RecurringFrequency = 'weekly' | 'monthly' | 'quarterly'
+
+export interface RecurringInvoice {
+  id?: number
+  clientId: number
+  clientSnapshot: ClientSnapshot
+  items: LineItem[]
+  subtotal: number
+  discountType?: 'percent' | 'fixed'
+  discountValue?: number
+  discountAmount: number
+  taxRate?: number
+  taxAmount: number
+  total: number
+  dpPercent?: number
+  dpAmount?: number
+  notes?: string
+  paymentTerms?: string
+  frequency: RecurringFrequency
+  // Tanggal run berikutnya (format YYYY-MM-DD). Saat ini <= today, invoice dibuat.
+  nextRunDate: string
+  // Auto-create sebagai 'sent' (langsung kirim) atau 'draft'
+  autoSend: boolean
+  active: boolean
+  lastGeneratedId?: number
+  createdAt: number
+  updatedAt: number
+}
+
 class InvoiceGuaDB extends Dexie {
   documents!: Table<Document>
   clients!: Table<Client>
   serviceTemplates!: Table<ServiceTemplate>
   settings!: Table<Settings>
+  recurring!: Table<RecurringInvoice>
 
   constructor() {
     super('InvoiceGuaDB')
@@ -81,6 +111,13 @@ class InvoiceGuaDB extends Dexie {
       clients: '++id, name, company',
       serviceTemplates: '++id, name, order',
       settings: '&key',
+    })
+    this.version(2).stores({
+      documents: '++id, type, number, clientId, status, issueDate, dueDate, createdAt',
+      clients: '++id, name, company',
+      serviceTemplates: '++id, name, order',
+      settings: '&key',
+      recurring: '++id, clientId, frequency, nextRunDate, active, createdAt',
     })
   }
 }

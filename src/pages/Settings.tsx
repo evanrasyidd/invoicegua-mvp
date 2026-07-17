@@ -1,303 +1,81 @@
-import { useState, useRef, useEffect, type ChangeEvent } from 'react'
-import { IconUpload, IconDownload, IconAlertTriangle, IconCheck } from '@tabler/icons-react'
-import {
-  useBusinessProfile,
-  useBankInfo,
-  saveBusinessProfile,
-  saveBankInfo,
-  saveLogoBase64,
-  useLogoBase64,
-  useSetting,
-  saveSetting,
-  type BusinessProfile,
-  type BankInfo,
-} from '../hooks/useBusinessProfile'
-import { useAppStore } from '../store/useAppStore'
-import { confirmDialog } from '../store/useConfirmStore'
-import { AccountSection } from '../components/auth/AccountSection'
-import { ServiceTemplateList } from '../components/service/ServiceTemplateList'
-import { Button } from '../components/ui/Button'
+import { useNavigate } from 'react-router-dom'
+import { IconChevronRight, IconUser, IconBuildingStore, IconDatabase } from '@tabler/icons-react'
 import { Card } from '../components/ui/Card'
-import { exportBackup, importBackup, factoryReset } from '../hooks/useExport'
+import { useAuthStore } from '../store/useAuthStore'
+
+interface MenuEntry {
+  to: string
+  icon: typeof IconUser
+  title: string
+  desc: string
+  danger?: boolean
+}
 
 export function Settings() {
-  const { showToast } = useAppStore()
-  const business = useBusinessProfile()
-  const bank = useBankInfo()
-  const logo = useLogoBase64()
-  const defaultDueDays = useSetting('defaultDueDays')
-  const defaultTaxRate = useSetting('defaultTaxRate')
-  const defaultPaymentTerms = useSetting('defaultPaymentTerms')
+  const navigate = useNavigate()
+  const { user } = useAuthStore()
 
-  const [bizForm, setBizForm] = useState<BusinessProfile>({
-    name: '', ownerName: '', email: '', phone: '', address: '', city: '',
-  })
-  const [bankForm, setBankForm] = useState<BankInfo>({
-    bankName: '', accountNumber: '', accountHolder: '',
-  })
-  const [dueDays, setDueDays] = useState('3')
-  const [taxRate, setTaxRate] = useState('0')
-  const [paymentTerms, setPaymentTerms] = useState('')
-  const [bizLoading, setBizLoading] = useState(false)
-  const [bankLoading, setBankLoading] = useState(false)
-  const [importLoading, setImportLoading] = useState(false)
-  const [bizSaved, setBizSaved] = useState(false)
-  const [bankSaved, setBankSaved] = useState(false)
-
-  const logoInputRef = useRef<HTMLInputElement>(null)
-  const importInputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => { if (business) setBizForm(business) }, [business])
-  useEffect(() => { if (bank) setBankForm(bank) }, [bank])
-  useEffect(() => { if (defaultDueDays != null) setDueDays(defaultDueDays) }, [defaultDueDays])
-  useEffect(() => { if (defaultTaxRate != null) setTaxRate(defaultTaxRate) }, [defaultTaxRate])
-  useEffect(() => { if (defaultPaymentTerms != null) setPaymentTerms(defaultPaymentTerms) }, [defaultPaymentTerms])
-
-  const handleSaveBiz = async () => {
-    if (!bizForm.name.trim()) { showToast('Nama bisnis wajib diisi', 'error'); return }
-    setBizLoading(true)
-    try {
-      await saveBusinessProfile(bizForm)
-      await saveSetting('defaultDueDays', dueDays)
-      await saveSetting('defaultTaxRate', taxRate)
-      await saveSetting('defaultPaymentTerms', paymentTerms)
-      setBizSaved(true)
-      showToast('Profil bisnis disimpan', 'success')
-      setTimeout(() => setBizSaved(false), 2000)
-    } catch { showToast('Gagal menyimpan', 'error') }
-    finally { setBizLoading(false) }
-  }
-
-  const handleSaveBank = async () => {
-    setBankLoading(true)
-    try {
-      await saveBankInfo(bankForm)
-      setBankSaved(true)
-      showToast('Info bank disimpan', 'success')
-      setTimeout(() => setBankSaved(false), 2000)
-    } catch { showToast('Gagal menyimpan', 'error') }
-    finally { setBankLoading(false) }
-  }
-
-  const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (file.size > 1024 * 1024) { showToast('Ukuran logo max 1MB', 'error'); return }
-    const reader = new FileReader()
-    reader.onload = async (ev) => {
-      await saveLogoBase64(ev.target?.result as string)
-      showToast('Logo disimpan', 'success')
-    }
-    reader.readAsDataURL(file)
-  }
-
-  const handleImport = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setImportLoading(true)
-    try {
-      await importBackup(file)
-      showToast('Data berhasil diimpor, halaman akan di-refresh...', 'success')
-      setTimeout(() => window.location.reload(), 1500)
-    } catch { showToast('File backup tidak valid', 'error') }
-    finally {
-      setImportLoading(false)
-      if (importInputRef.current) importInputRef.current.value = ''
-    }
-  }
-
-  const handleFactoryReset = async () => {
-    const step1 = await confirmDialog({
-      title: 'Reset semua data?',
-      description: 'SEMUA invoice, klien, dan pengaturan akan dihapus permanen. Akun login tidak akan terhapus.',
-      variant: 'danger',
-      confirmLabel: 'Lanjutkan',
-    })
-    if (!step1) return
-
-    const step2 = await confirmDialog({
-      title: 'Yakin mau reset?',
-      description: 'Ini tindakan terakhir — data tidak bisa dikembalikan setelah ini.',
-      variant: 'danger',
-      confirmLabel: 'Ya, Reset Sekarang',
-    })
-    if (!step2) return
-
-    await factoryReset()
-    showToast('Data direset ke awal', 'info')
-    setTimeout(() => window.location.reload(), 1000)
-  }
-
-  const inputCls =
-    'bg-[var(--color-bg)] border border-[var(--color-border)] text-sm rounded-[8px] px-[10px] py-[7px] w-full focus:outline-none focus:border-[var(--color-primary)] transition-colors text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)]'
-
-  const field = (
-    label: string,
-    value: string,
-    onChange: (v: string) => void,
-    placeholder?: string,
-    type = 'text',
-  ) => (
-    <div className="flex flex-col gap-1">
-      <label className="text-xs font-medium text-[var(--color-text-secondary)]">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={inputCls}
-        style={{ borderWidth: '0.5px' }}
-      />
-    </div>
-  )
+  const entries: MenuEntry[] = [
+    {
+      to: '/settings/akun',
+      icon: IconUser,
+      title: 'Akun',
+      desc: user ? `@${user.username} · ganti password & keluar` : 'Kelola akun',
+    },
+    {
+      to: '/settings/bisnis',
+      icon: IconBuildingStore,
+      title: 'Bisnis',
+      desc: 'Profil, info rekening, template layanan',
+    },
+    {
+      to: '/settings/data',
+      icon: IconDatabase,
+      title: 'Data',
+      desc: 'Backup, restore, zona bahaya',
+      danger: true,
+    },
+  ]
 
   return (
-    <div className="p-5 md:p-8 max-w-3xl mx-auto space-y-8">
+    <div className="p-5 md:p-8 max-w-3xl mx-auto space-y-6">
       <div>
         <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">Setelan</h1>
         <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
-          Konfigurasi profil bisnis dan preferensi
+          Kelola akun, bisnis, dan data kamu
         </p>
       </div>
 
-      {/* Akun — akses ganti password & keluar, penting untuk mobile */}
-      <AccountSection />
-
-      {/* Business profile */}
-      <section>
-        <h2 className="text-sm font-semibold mb-3 text-[var(--color-text-primary)]">Profil Bisnis</h2>
-        <Card>
-          <div className="space-y-3">
-            <div className="flex items-center gap-4">
+      <div className="space-y-3">
+        {entries.map(({ to, icon: Icon, title, desc, danger }) => (
+          <button
+            key={to}
+            onClick={() => navigate(to)}
+            className="w-full text-left cursor-pointer group"
+            aria-label={title}
+          >
+            <Card className="flex items-center gap-4 hover:border-[var(--color-primary)] transition-colors">
               <div
-                className="w-16 h-16 rounded-[8px] border border-[var(--color-border)] bg-[var(--color-bg)] flex items-center justify-center overflow-hidden cursor-pointer hover:border-[var(--color-primary)] transition-colors shrink-0"
-                style={{ borderWidth: '0.5px' }}
-                onClick={() => logoInputRef.current?.click()}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && logoInputRef.current?.click()}
-                aria-label="Upload logo"
+                className={`w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0 ${
+                  danger ? 'bg-red-50 dark:bg-red-950/30' : 'bg-[var(--color-bg)]'
+                }`}
               >
-                {logo ? (
-                  <img src={logo} alt="Logo" className="w-full h-full object-contain p-1" />
-                ) : (
-                  <IconUpload size={18} className="text-[var(--color-text-muted)]" />
-                )}
+                <Icon size={18} className={danger ? 'text-red-500' : 'text-[var(--color-text-secondary)]'} />
               </div>
-              <div>
-                <p className="text-xs font-medium text-[var(--color-text-primary)]">Logo bisnis</p>
-                <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">PNG/JPG, max 1MB</p>
-                <button
-                  onClick={() => logoInputRef.current?.click()}
-                  className="text-[10px] text-[var(--color-text-primary)] underline mt-1 cursor-pointer"
-                >
-                  Ganti logo
-                </button>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-medium ${danger ? 'text-red-500' : 'text-[var(--color-text-primary)]'}`}>
+                  {title}
+                </p>
+                <p className="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">{desc}</p>
               </div>
-              <input
-                ref={logoInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                className="hidden"
-                onChange={handleLogoUpload}
+              <IconChevronRight
+                size={16}
+                className="text-[var(--color-text-muted)] group-hover:text-[var(--color-text-primary)] transition-colors shrink-0"
               />
-            </div>
-
-            <div className="grid gap-3">
-              {field('Nama Bisnis *', bizForm.name, (v) => setBizForm((f) => ({ ...f, name: v })), 'EgaxDev Studios')}
-              {field('Nama Pemilik', bizForm.ownerName, (v) => setBizForm((f) => ({ ...f, ownerName: v })), 'Evan Rasyid')}
-              {field('Email', bizForm.email, (v) => setBizForm((f) => ({ ...f, email: v })), 'hello@egaxdev.com', 'email')}
-              {field('No. HP / WA', bizForm.phone, (v) => setBizForm((f) => ({ ...f, phone: v })), '08123456789')}
-              {field('Alamat', bizForm.address, (v) => setBizForm((f) => ({ ...f, address: v })), 'Jl. Contoh No. 1')}
-              {field('Kota', bizForm.city, (v) => setBizForm((f) => ({ ...f, city: v })), 'Depok, Jawa Barat')}
-            </div>
-
-            <div className="pt-3 border-t border-[var(--color-border-light)]">
-              <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-3">Default Invoice</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-[var(--color-text-secondary)]">Jatuh tempo (hari)</label>
-                  <input type="number" min="1" max="365" value={dueDays} onChange={(e) => setDueDays(e.target.value)} className={inputCls} style={{ borderWidth: '0.5px' }} />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-[var(--color-text-secondary)]">PPN default (%)</label>
-                  <input type="number" min="0" max="100" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} className={inputCls} style={{ borderWidth: '0.5px' }} />
-                </div>
-              </div>
-              <div className="flex flex-col gap-1 mt-3">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">Syarat pembayaran default</label>
-                <input type="text" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} placeholder="Transfer dalam 3 hari kerja..." className={inputCls} style={{ borderWidth: '0.5px' }} />
-              </div>
-            </div>
-
-            <Button onClick={handleSaveBiz} loading={bizLoading} className="w-full">
-              {bizSaved ? <span className="flex items-center gap-1.5"><IconCheck size={14} /> Tersimpan</span> : 'Simpan Profil Bisnis'}
-            </Button>
-          </div>
-        </Card>
-      </section>
-
-      {/* Bank info */}
-      <section>
-        <h2 className="text-sm font-semibold mb-3 text-[var(--color-text-primary)]">Info Rekening</h2>
-        <Card>
-          <div className="space-y-3">
-            {field('Nama Bank', bankForm.bankName, (v) => setBankForm((f) => ({ ...f, bankName: v })), 'BCA / Mandiri / BRI...')}
-            {field('Nomor Rekening', bankForm.accountNumber, (v) => setBankForm((f) => ({ ...f, accountNumber: v })), '1234567890')}
-            {field('Nama Pemilik Rekening', bankForm.accountHolder, (v) => setBankForm((f) => ({ ...f, accountHolder: v })), 'Evan Rasyid Ega Pratama')}
-            <Button onClick={handleSaveBank} loading={bankLoading} className="w-full">
-              {bankSaved ? <span className="flex items-center gap-1.5"><IconCheck size={14} /> Tersimpan</span> : 'Simpan Info Rekening'}
-            </Button>
-          </div>
-        </Card>
-      </section>
-
-      {/* Service templates */}
-      <section>
-        <h2 className="text-sm font-semibold mb-3 text-[var(--color-text-primary)]">Template Layanan</h2>
-        <ServiceTemplateList />
-      </section>
-
-      {/* Backup & restore */}
-      <section>
-        <h2 className="text-sm font-semibold mb-3 text-[var(--color-text-primary)]">Backup & Restore</h2>
-        <Card>
-          <div className="space-y-3">
-            <p className="text-xs text-[var(--color-text-muted)]">
-              Semua data tersimpan di browser kamu (IndexedDB). Backup rutin disarankan agar data tidak hilang saat ganti device atau clear cache.
-            </p>
-            <div className="flex gap-2">
-              <Button variant="ghost" onClick={exportBackup} className="flex-1">
-                <IconDownload size={14} />
-                Ekspor Backup
-              </Button>
-              <Button variant="ghost" onClick={() => importInputRef.current?.click()} loading={importLoading} className="flex-1">
-                <IconUpload size={14} />
-                Impor Backup
-              </Button>
-              <input ref={importInputRef} type="file" accept=".json,application/json" className="hidden" onChange={handleImport} />
-            </div>
-          </div>
-        </Card>
-      </section>
-
-      {/* Danger zone */}
-      <section>
-        <h2 className="text-sm font-semibold mb-3 text-red-500 flex items-center gap-1.5">
-          <IconAlertTriangle size={14} />
-          Zona Bahaya
-        </h2>
-        <Card>
-          <div className="space-y-3">
-            <p className="text-xs text-[var(--color-text-muted)]">
-              Reset semua data ke kondisi awal. Invoice, klien, dan pengaturan akan dihapus permanen. Akun login tidak akan terhapus.
-            </p>
-            <Button variant="danger" onClick={handleFactoryReset} className="w-full">
-              Reset Semua Data
-            </Button>
-          </div>
-        </Card>
-      </section>
+            </Card>
+          </button>
+        ))}
+      </div>
 
       <div className="text-center pb-4">
         <p className="text-[10px] text-[var(--color-text-muted)]">

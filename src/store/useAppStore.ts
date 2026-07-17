@@ -3,6 +3,7 @@ import { create } from 'zustand'
 interface AppStore {
   theme: 'light' | 'dark'
   toast: { message: string; type: 'success' | 'error' | 'info' } | null
+  toastTimer: ReturnType<typeof setTimeout> | null
   setTheme: (theme: 'light' | 'dark') => void
   toggleTheme: () => void
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void
@@ -12,6 +13,7 @@ interface AppStore {
 export const useAppStore = create<AppStore>((set, get) => ({
   theme: (localStorage.getItem('theme') as 'light' | 'dark') || 'light',
   toast: null,
+  toastTimer: null,
 
   setTheme: (theme) => {
     localStorage.setItem('theme', theme)
@@ -25,9 +27,19 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   showToast: (message, type = 'info') => {
+    // Clear timeout sebelumnya biar toast berturut-turut gak saling potong
+    const prev = get().toastTimer
+    if (prev) clearTimeout(prev as Parameters<typeof clearTimeout>[0])
     set({ toast: { message, type } })
-    setTimeout(() => set({ toast: null }), 3500)
+    const timer = setTimeout(() => {
+      set({ toast: null, toastTimer: null })
+    }, 3500)
+    set({ toastTimer: timer })
   },
 
-  clearToast: () => set({ toast: null }),
+  clearToast: () => {
+    const prev = get().toastTimer
+    if (prev) clearTimeout(prev as Parameters<typeof clearTimeout>[0])
+    set({ toast: null, toastTimer: null })
+  },
 }))

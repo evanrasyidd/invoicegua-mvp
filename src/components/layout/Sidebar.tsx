@@ -5,6 +5,7 @@ import {
   IconFileText,
   IconUsers,
   IconSettings,
+  IconRepeat,
   IconSun,
   IconMoon,
 } from '@tabler/icons-react'
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
   { to: '/', icon: IconLayoutDashboard, label: 'Dashboard' },
   { to: '/invoice', icon: IconFileInvoice, label: 'Invoice' },
   { to: '/quote', icon: IconFileText, label: 'Penawaran' },
+  { to: '/recurring', icon: IconRepeat, label: 'Berulang' },
   { to: '/clients', icon: IconUsers, label: 'Klien' },
   { to: '/settings', icon: IconSettings, label: 'Setelan' },
 ]

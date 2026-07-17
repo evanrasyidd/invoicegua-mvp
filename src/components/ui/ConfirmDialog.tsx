@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { IconAlertTriangle, IconHelpCircle } from '@tabler/icons-react'
 import { useConfirmStore } from '../../store/useConfirmStore'
@@ -7,11 +7,22 @@ import { Button } from './Button'
 export function ConfirmDialog() {
   const { open, options, handleConfirm, handleCancel } = useConfirmStore()
   const variant = options.variant ?? 'default'
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const confirmBtnRef = useRef<HTMLButtonElement>(null)
+  const lastFocused = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     if (!open) return
+    // Simpan elemen yang tadi fokus, biar bisa dikembalikan pas tutup
+    lastFocused.current = document.activeElement as HTMLElement
+    // Auto-focus tombol konfirmasi (aksi utama)
+    confirmBtnRef.current?.focus()
+
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleCancel()
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        handleCancel()
+      }
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
@@ -21,6 +32,30 @@ export function ConfirmDialog() {
     document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [open])
+
+  // Restore fokus ke elemen sebelumnya saat dialog ditutup
+  useEffect(() => {
+    if (open) return
+    lastFocused.current?.focus?.()
+  }, [open])
+
+  // Focus trap — Tab / Shift+Tab berputar di dalam dialog
+  const trapFocus = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab' || !dialogRef.current) return
+    const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    )
+    if (focusable.length === 0) return
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault()
+      last.focus()
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault()
+      first.focus()
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -42,6 +77,8 @@ export function ConfirmDialog() {
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="confirm-dialog-title"
+            ref={dialogRef}
+            onKeyDown={trapFocus}
             className="relative w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-xl z-10"
             style={{ borderWidth: '0.5px' }}
           >
@@ -82,6 +119,7 @@ export function ConfirmDialog() {
                 variant={variant === 'danger' ? 'danger' : 'primary'}
                 onClick={handleConfirm}
                 className="flex-1"
+                ref={confirmBtnRef}
               >
                 {options.confirmLabel ?? 'Ya, lanjutkan'}
               </Button>

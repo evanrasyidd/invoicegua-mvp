@@ -4,6 +4,8 @@ import { useDashboardStats } from '../hooks/useDashboardStats'
 import { useAuthStore } from '../store/useAuthStore'
 import { StatCards } from '../components/dashboard/StatCards'
 import { MonthlyChart } from '../components/dashboard/MonthlyChart'
+import { StatusDonut } from '../components/dashboard/StatusDonut'
+import { TrendLine } from '../components/dashboard/TrendLine'
 import { RecentDocuments } from '../components/dashboard/RecentDocuments'
 import { OnboardingBanner } from '../components/ui/OnboardingBanner'
 import { Card } from '../components/ui/Card'
@@ -80,19 +82,41 @@ export function Dashboard() {
         </div>
       )}
 
-      {/* Revenue chart + recent docs */}
+      {/* Revenue bar + status donut */}
       <div className="grid lg:grid-cols-[1fr_360px] gap-5">
         <Card>
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm font-medium text-[var(--color-text-primary)]">
               Revenue 6 bulan terakhir
             </p>
-            <span className="text-[10px] text-[var(--color-text-muted)] bg-[var(--color-bg)] px-2 py-0.5 rounded-full">
-              Lunas saja
-            </span>
           </div>
           {stats ? (
-            <MonthlyChart data={stats.monthlyData} />
+            <MonthlyChart paidData={stats.monthlyPaid} sentData={stats.monthlySent} />
+          ) : (
+            <div className="h-[180px] bg-[var(--color-bg)] rounded-lg animate-pulse" />
+          )}
+        </Card>
+
+        <Card>
+          <p className="text-sm font-medium text-[var(--color-text-primary)] mb-4">
+            Komposisi Status
+          </p>
+          {stats ? (
+            <StatusDonut data={stats.statusData} />
+          ) : (
+            <div className="h-[220px] bg-[var(--color-bg)] rounded-lg animate-pulse" />
+          )}
+        </Card>
+      </div>
+
+      {/* Trend line + recent docs */}
+      <div className="grid lg:grid-cols-[1fr_360px] gap-5">
+        <Card>
+          <p className="text-sm font-medium text-[var(--color-text-primary)] mb-4">
+            Tren Lunas vs Menunggu
+          </p>
+          {stats ? (
+            <TrendLine paid={stats.trendPaid} unpaid={stats.trendUnpaid} />
           ) : (
             <div className="h-[180px] bg-[var(--color-bg)] rounded-lg animate-pulse" />
           )}

@@ -5,12 +5,14 @@ import {
   IconFileText,
   IconUsers,
   IconSettings,
+  IconRepeat,
 } from '@tabler/icons-react'
 
 const NAV_ITEMS = [
   { to: '/', icon: IconLayoutDashboard, label: 'Dashboard' },
   { to: '/invoice', icon: IconFileInvoice, label: 'Invoice' },
   { to: '/quote', icon: IconFileText, label: 'Penawaran' },
+  { to: '/recurring', icon: IconRepeat, label: 'Berulang' },
   { to: '/clients', icon: IconUsers, label: 'Klien' },
   { to: '/settings', icon: IconSettings, label: 'Setelan' },
 ]
@@ -31,14 +33,14 @@ export function BottomNav() {
           to={to}
           end={to === '/'}
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center flex-1 py-2 gap-0.5 text-[10px] font-medium transition-colors ${
+            `flex flex-col items-center justify-center flex-1 py-1.5 gap-0 text-[9px] font-medium transition-colors ${
               isActive
                 ? 'text-[var(--color-text-primary)]'
                 : 'text-[var(--color-text-muted)]'
             }`
           }
         >
-          <Icon size={18} />
+          <Icon size={16} />
           {label}
         </NavLink>
       ))}

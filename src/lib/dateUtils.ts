@@ -59,3 +59,12 @@ export function getMonthYear(dateStr: string): string {
   const date = new Date(dateStr)
   return date.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
 }
+
+// Tambah interval ke tanggal ISO (YYYY-MM-DD). Dipakai buat nextRunDate recurring.
+export function addInterval(dateStr: string, frequency: 'weekly' | 'monthly' | 'quarterly'): string {
+  const date = new Date(dateStr)
+  if (frequency === 'weekly') date.setDate(date.getDate() + 7)
+  else if (frequency === 'monthly') date.setMonth(date.getMonth() + 1)
+  else if (frequency === 'quarterly') date.setMonth(date.getMonth() + 3)
+  return toISODate(date)
+}

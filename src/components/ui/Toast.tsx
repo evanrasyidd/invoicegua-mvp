@@ -25,6 +25,8 @@ export function Toast() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 24 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
+          role="status"
+          aria-live="polite"
           className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium shadow-lg ${colors[toast.type]}`}
         >
           {icons[toast.type]}
